@@ -33,7 +33,7 @@
 <body>
 
 <h1>Bringing Sketches to Life with Generative AI</h1>
-<div class="meta"><span><b>Student name:</b> Hina Kanwal</span><span><b>Student ID:</b> 32520481</span><span><b>Date:</b> 17 November 2026</span></div>
+<div class="meta"><span><b>Student name:</b> Hina Kanwal</span><span><b>Student ID:</b> 32520481</span><span><b>Date:</b> 20 November 2026</span></div>
 <div class="meta"><b>Code repository:</b> <a href="https://github.com/HinaKanwal-sys/sketch-to-image-genai">https://github.com/HinaKanwal-sys/sketch-to-image-genai</a></div>
 
 <h2>1. Introduction and goal</h2>
@@ -125,8 +125,9 @@ weights distilled so that SD 1.5 can produce an image in 2–8 steps without cla
 configuration is: SD 1.5, ControlNet scribble, conditioning scale 1.0, control window 0–1, LCM-LoRA with 4 steps,
 guidance 1.0, 512×512, seed 1, cleaned sketch, photoreal style. This takes about 80 s per image. One study (E5b)
 uses the standard UniPC sampler [6] with 20 steps and guidance 7.5 as a quality reference.</p>
-<p><b>Inputs.</b> Five sketches (tower, robot, hover car, desk lamp, floating island), drawn as pencil-style line drawings on
-textured paper with uneven lighting (<code>sketches/</code>). <b>Experiments:</b> E1 control type (incl. a text-only baseline
+<p><b>Inputs.</b> Five sketches (tower, robot, hover car, desk lamp, floating island) in <code>sketches/</code>. I made them with a
+small drawing script (<code>scripts/make_sketches.py</code>) that imitates pencil strokes (hand wobble, overshoot, double lines) on
+unevenly lit paper, like a phone photo, so they are reproducible and the preprocessing has real work to do. <b>Experiments:</b> E1 control type (incl. a text-only baseline
 without ControlNet), E2 conditioning scale, E3 control window, E4 style, E5 LCM step count, E5b standard sampler, E7 seeds,
 E8 raw vs. cleaned sketch; 135 images in total. One factor is changed at a time from the default.</p>
 <p class="small"><b>Reproducibility.</b> Python 3.14, PyTorch 2.12 (CPU, float32), diffusers 0.43.0, transformers 5.23.0, peft 0.21.3.
@@ -270,7 +271,7 @@ drawn. CLIP measures prompt alignment, not beauty. Both are proxies, so I always
 standard sampling, and with heavy conditioning some (e.g. the tower) keep visible pencil grid lines.</li>
 <li><b>Artifacts.</b> The standard-sampler tower image contains a fake watermark in the corner, a known SD 1.5 artifact
 learned from web images. I disabled the safety checker for speed; all prompts are harmless.</li>
-<li><b>Sketches.</b> My test sketches are clean line drawings. Very messy sketches, perspective errors or shading would be
+<li><b>Sketches.</b> My test sketches are generated line drawings. Real, very messy sketches, perspective errors or shading would be
 harder; the agent is a first step towards handling such cases automatically.</li>
 </ul>
 
@@ -296,7 +297,7 @@ trade-off is between conditioning strength and text freedom. Cleaning the sketch
 <li>J. Canny. A Computational Approach to Edge Detection. IEEE TPAMI, 1986.</li>
 <li>Software: PyTorch, Hugging Face Diffusers / Transformers / PEFT, OpenCV, scikit-image, Gradio. Model licences are listed in <code>REFERENCES.md</code>.</li>
 </ol>
-<p class="small"><b>AI assistance.</b> I used an AI coding assistant (Claude, Anthropic) to help write parts of the code and documentation.
+<p class="small"><b>AI assistance.</b> I used an AI coding assistant (Claude, Anthropic) to help write parts of the code (including the sketch-drawing script) and documentation.
 I reviewed and ran all experiments myself and checked the results and conclusions.</p>
 
 </body>

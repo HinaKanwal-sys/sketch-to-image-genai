@@ -51,14 +51,13 @@ scripts/
   run_experiments.py         runs the sweeps
   analyze.py                 plots + Markdown summary from the CSVs
 notebooks/kaggle_run_all.ipynb   reproduces every result on a free Kaggle GPU
-docs/KAGGLE_GUIDE.md         step-by-step guide for Kaggle
 results/                     grids, metrics CSVs, analysis plots (after a run)
 ```
 
 ## Installation
 
-**Kaggle / Colab (GPU, recommended):** follow [docs/KAGGLE_GUIDE.md](docs/KAGGLE_GUIDE.md) and run
-`notebooks/kaggle_run_all.ipynb`.
+**Kaggle / Colab (GPU):** import `notebooks/kaggle_run_all.ipynb`, switch on a GPU and Internet access,
+and run all cells. This runs the GPU configuration (`configs/experiments.yaml`).
 
 **Local:**
 

@@ -37,9 +37,9 @@
 ## Software
 
 - PyTorch: <https://pytorch.org>
-- 🤗 Diffusers: <https://github.com/huggingface/diffusers> (pipelines, ControlNet, schedulers, LoRA loading)
-- 🤗 Transformers: <https://github.com/huggingface/transformers> (CLIP)
-- 🤗 Accelerate, PEFT: <https://github.com/huggingface/accelerate>, <https://github.com/huggingface/peft>
+- Diffusers: <https://github.com/huggingface/diffusers> (pipelines, ControlNet, schedulers, LoRA loading)
+- Transformers: <https://github.com/huggingface/transformers> (CLIP)
+- Accelerate, PEFT: <https://github.com/huggingface/accelerate>, <https://github.com/huggingface/peft>
 - ControlNet v1.1 reference implementation: <https://github.com/lllyasviel/ControlNet-v1-1-nightly>
 - controlnet_aux (annotators): <https://github.com/huggingface/controlnet_aux>
 - OpenCV, scikit-image, NumPy, Pillow, pandas, matplotlib, PyYAML
@@ -50,5 +50,5 @@
 
 ## AI assistance
 
-Parts of the code and documentation were developed with the help of an AI coding assistant (Claude, Anthropic).
-All design decisions, experiments and conclusions were reviewed, run and verified by the author.
+I used an AI coding assistant (Claude, Anthropic) to help write parts of the code (including the
+sketch-drawing script) and documentation. I ran all experiments myself and checked the results and conclusions.

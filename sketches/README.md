@@ -10,11 +10,10 @@
 
 ## Provenance
 
-These sketches were **generated procedurally** by [`scripts/make_sketches.py`](../scripts/make_sketches.py),
-a small "pen model" that draws strokes with hand-like wobble, overshoot, double lines and pressure
-variation on a textured, unevenly lit paper background (imitating a phone photo of a pencil sketch).
-The drawing script was written with AI assistance (Claude) and reviewed by the author. No external images
-were used, so there are no copyright or permission issues. They can be regenerated exactly with:
+The sketches are drawn by [`scripts/make_sketches.py`](../scripts/make_sketches.py), a small "pen model"
+that draws strokes with hand-like wobble, overshoot, double lines and pressure variation on a textured,
+unevenly lit paper background (like a phone photo of a pencil sketch). No external images were used.
+They can be regenerated exactly with:
 
 ```bash
 python scripts/make_sketches.py --out sketches
