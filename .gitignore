@@ -9,6 +9,7 @@ results_smoke/
 # Individual generated images are large; the repo keeps the grids, CSVs,
 # control maps, analysis plots and a curated showcase instead.
 results/E*/*/
+results/H*/*/
 !results/showcase/
 
 # local / not part of the submission
@@ -18,3 +19,5 @@ results_run.log
 results/_backup_run1/
 results/agent_run.log
 docs/
+
+results/handdrawn_run.log

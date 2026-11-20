@@ -35,6 +35,8 @@ class CleanConfig:
     min_component_px: int = 30     # remove specks smaller than this (at working resolution)
     stroke_px: int = 0             # 0 = keep stroke width, >0 = dilate/thin to roughly this width
     margin: float = 0.06           # white border added around the cropped drawing
+    remove_ruled_lines: bool = False  # notebook paper: drop long straight lines (see _remove_ruled_lines)
+    ruled_min_frac: float = 0.6    # a ruled line must span at least this fraction of the image
 
 
 def load_image(path_or_img) -> Image.Image:
@@ -50,6 +52,7 @@ def clean_sketch(img, cfg: CleanConfig | None = None) -> Image.Image:
     1. grayscale
     2. flatten uneven lighting: divide by a heavily blurred copy (background estimate)
     3. adaptive threshold: robust to remaining shading and paper texture
+    3b. optionally remove ruled notebook lines
     4. remove small connected components (dust, paper grain)
     5. crop to the drawing's bounding box, pad to a square with a margin, resize
     6. optionally normalise stroke width
@@ -64,6 +67,9 @@ def clean_sketch(img, cfg: CleanConfig | None = None) -> Image.Image:
         flat, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, cfg.block_size | 1, cfg.c
     )  # lines = 255
 
+    if cfg.remove_ruled_lines:
+        binary = _remove_ruled_lines(binary, cfg.ruled_min_frac)
+
     n, labels, stats, _ = cv2.connectedComponentsWithStats(binary, connectivity=8)
     keep = np.zeros(n, dtype=bool)
     keep[1:] = stats[1:, cv2.CC_STAT_AREA] >= cfg.min_component_px
@@ -76,6 +82,74 @@ def clean_sketch(img, cfg: CleanConfig | None = None) -> Image.Image:
     if cfg.stroke_px > 0:
         binary = _normalise_stroke(binary, cfg.stroke_px)
     return Image.fromarray(255 - binary).convert("RGB")  # black lines on white
+
+
+def _remove_ruled_lines(binary: np.ndarray, min_frac: float) -> np.ndarray:
+    """Remove the printed lines of notebook paper.
+
+    Ruled lines are long, straight and all parallel, while the drawing's strokes are shorter or curved.
+    I find long segments with a probabilistic Hough transform, keep only those parallel to the dominant
+    direction (so a long straight edge of the drawing in another direction survives), erase them, and
+    close the small gaps this cuts into strokes that crossed a ruled line.
+    """
+    h, w = binary.shape
+    min_len = int(min_frac * min(h, w))
+    segs = cv2.HoughLinesP(binary, 1, np.pi / 360, threshold=min_len // 2, minLineLength=min_len, maxLineGap=25)
+    if segs is None:
+        return binary
+    segs = segs[:, 0, :]
+    angles = np.degrees(np.arctan2(segs[:, 3] - segs[:, 1], segs[:, 2] - segs[:, 0])) % 180
+    hist = np.histogram(angles, bins=36, range=(0, 180))[0]
+    main = (np.argmax(hist) + 0.5) * 5
+    diff = np.minimum(np.abs(angles - main), 180 - np.abs(angles - main))
+    mask = np.zeros_like(binary)
+    for (x0, y0, x1, y1) in segs[diff < 8]:
+        # extend each segment a little (lines fade in shadows); extending further would widen the
+        # erased band where nearly parallel segments diverge, cutting deep gaps into crossing strokes
+        dx, dy = x1 - x0, y1 - y0
+        t = 0.1 * max(h, w) / max(np.hypot(dx, dy), 1)
+        p0 = (int(x0 - t * dx), int(y0 - t * dy))
+        p1 = (int(x1 + t * dx), int(y1 + t * dy))
+        cv2.line(mask, p0, p1, 255, thickness=7)
+    out = cv2.bitwise_and(binary, cv2.bitwise_not(mask))
+
+    # pieces of ruled lines that bend with the paper survive the straight mask: drop thin
+    # components that run parallel to the ruled lines
+    n, labels, stats, _ = cv2.connectedComponentsWithStats(out, connectivity=8)
+    for i in range(1, n):
+        ys, xs = np.nonzero(labels == i)
+        if len(xs) < 5:
+            continue
+        # principal axis of the pixel cloud: direction, length and thickness of the piece
+        pts = np.column_stack([xs, ys]).astype(np.float64)
+        evals, evecs = np.linalg.eigh(np.cov(pts, rowvar=False))
+        length, thick = 4 * np.sqrt(max(evals[1], 0)), 4 * np.sqrt(max(evals[0], 0))
+        ang = np.degrees(np.arctan2(evecs[1, 1], evecs[0, 1])) % 180
+        d = abs((ang - main + 90) % 180 - 90)
+        if thick <= 8 and length >= 4 * max(thick, 1) and d < 10:
+            out[labels == i] = 0
+
+    # bridge the gaps with a closing whose kernel is a short line perpendicular to the ruled lines:
+    # it reconnects strokes that crossed a ruled line without smearing along it
+    L = 31
+    kline = np.zeros((L, L), np.uint8)
+    a = np.radians(main + 90)
+    c = L // 2
+    cv2.line(kline, (int(c - c * np.cos(a)), int(c - c * np.sin(a))),
+             (int(c + c * np.cos(a)), int(c + c * np.sin(a))), 1, thickness=3)
+    closed = cv2.morphologyEx(out, cv2.MORPH_CLOSE, kline)
+    near = cv2.dilate(mask, np.ones((9, 9), np.uint8)) > 0  # only repair where a ruled line was erased
+    added = ((closed > 0) & (out == 0) & near).astype(np.uint8)
+    # a stroke crossing a ruled line leaves a narrow patch; wide patches come from hatching above and
+    # below the line being joined, so they are dropped
+    d = np.array([np.cos(np.radians(main)), np.sin(np.radians(main))])
+    n, labels, _, _ = cv2.connectedComponentsWithStats(added, connectivity=8)
+    for i in range(1, n):
+        ys, xs = np.nonzero(labels == i)
+        proj = xs * d[0] + ys * d[1]
+        if proj.max() - proj.min() > 14:
+            added[labels == i] = 0
+    return np.where(added > 0, 255, out).astype(np.uint8)
 
 
 def _crop_pad_square(lines: np.ndarray, margin: float) -> np.ndarray:

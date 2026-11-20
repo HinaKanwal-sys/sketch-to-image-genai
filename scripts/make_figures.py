@@ -79,6 +79,24 @@ def main() -> None:
         rows.append((SHORT[s], [("input sketch", img(S / f"{s}.png"))] + [
             (f"seed {k}", img(R / "E7_seeds" / s / f"seed={k}.png")) for k in [1, 2, 3]]))
     save_grid(rows, O / "fig_seeds.jpg", tile=200, row_label_w=120)
+
+    # Fig 6: real hand-drawn sketches on ruled paper (configs/experiments_handdrawn.yaml)
+    rows = []
+    for s, label in [("06_mug_photo", "mug\n(photo)"), ("07_car_photo", "car\n(photo)")]:
+        if not (R / "H1_handdrawn_control" / s).exists():
+            continue
+        photo = next(S.glob(f"{s}.*"))
+        rows.append((label, [
+            ("phone photo", img(photo)),
+            ("lines kept: control", img(R / "controls" / f"{s}__scribble__keep_lines.png")),
+            ("lines kept: result", img(R / "H3_ruled_lines" / s / "preprocess=keep_lines__seed=1.png")),
+            ("lines removed: control", img(R / "controls" / f"{s}__scribble.png")),
+            ("scribble, photoreal", img(R / "H1_handdrawn_control" / s / "control=scribble__seed=1.png")),
+            ("lineart, photoreal", img(R / "H1_handdrawn_control" / s / "control=lineart__seed=1.png")),
+            ("watercolor", img(R / "H2_handdrawn_style" / s / "style=watercolor__seed=1.png")),
+        ]))
+    if rows:
+        save_grid(rows, O / "fig_handdrawn.jpg", tile=200, row_label_w=100)
     print("figures written to", O)
 
 

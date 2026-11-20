@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 
 def _font(size: int):
@@ -31,7 +31,8 @@ def comparison_grid(
         d.multiline_text((8, y + label_h + tile // 2 - 20), rlabel.replace("_", "\n", 1), fill="black", font=fr)
         for ci, (clabel, im) in enumerate(cells):
             x = row_label_w + ci * tile
-            grid.paste(im.convert("RGB").resize((tile, tile), Image.LANCZOS), (x, y + label_h))
+            # pad instead of stretch, so non-square inputs (phone photos) keep their proportions
+            grid.paste(ImageOps.pad(im.convert("RGB"), (tile, tile), Image.LANCZOS, color="white"), (x, y + label_h))
             d.text((x + 4, y + 5), clabel[:34], fill="black", font=f)
     return grid
 

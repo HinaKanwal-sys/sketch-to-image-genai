@@ -35,9 +35,11 @@ sketch fixes *where* things are (layout, contours), while the prompt decides *wh
 ## Repository layout
 
 ```
-configs/experiments.yaml     all experiment definitions (sweeps, seeds, prompts)
-configs/smoke.yaml           fast CPU test with tiny random models
-sketches/                    the 5 input sketches (+ provenance)
+configs/experiments_cpu.yaml        the CPU study that was run (sketches 01–05)
+configs/experiments_handdrawn.yaml  the two real pencil sketches on notebook paper (06–07)
+configs/experiments.yaml            GPU version of the study (not run)
+configs/smoke.yaml                  fast CPU test with tiny random models
+sketches/                    the 7 input sketches (+ provenance)
 src/sketch2image/
   preprocess.py              sketch cleanup + control-map extraction
   pipeline.py                model registry, loading/caching, generation
@@ -50,7 +52,7 @@ scripts/
   generate.py                single-sketch generation CLI
   run_experiments.py         runs the sweeps
   analyze.py                 plots + Markdown summary from the CSVs
-notebooks/kaggle_run_all.ipynb   reproduces every result on a free Kaggle GPU
+notebooks/kaggle_run_all.ipynb   runs the GPU configuration on a free Kaggle GPU
 results/                     grids, metrics CSVs, analysis plots (after a run)
 ```
 
@@ -106,6 +108,14 @@ All runs use fixed seeds; every image's full settings and metrics are logged in 
 | E7 | Seed variance | 3 seeds |
 | E8 | Does preprocessing matter? | raw scan vs. cleaned sketch |
 
+**Real hand-drawn sketches** (`configs/experiments_handdrawn.yaml`, same CPU settings, sketches 06–07):
+
+| ID | Question | Sweep |
+|---|---|---|
+| H1 | Does ControlNet follow a real pencil drawing? | none (text only), scribble, lineart |
+| H2 | Style transfer on real drawings | photoreal, watercolor, concept art |
+| H3 | Do the ruled notebook lines need to be removed? | lines kept vs. removed in the control map |
+
 **GPU configuration, not run** (no GPU was available; defined in `configs/experiments.yaml` and the
 Kaggle notebook for anyone who wants to extend the study): E1b learned annotators (PiDiNet soft edge,
 learned lineart), E5 CFG {3, 7.5, 12} × steps {15, 30, 50}, E9 SDXL + xinsir scribble ControlNet,
@@ -124,7 +134,8 @@ a different drawing ≈ 0.14, blank image 0.
 ## Results
 
 The full study was run **on a laptop CPU** (Intel i5-7300U, no GPU) with `configs/experiments_cpu.yaml`:
-SD 1.5 + ControlNet, LCM-LoRA 4 steps, guidance 1.0, 512 px. That is 135 images, about 80 s each.
+SD 1.5 + ControlNet, LCM-LoRA 4 steps, guidance 1.0, 512 px. That is 135 images, about 80 s each, plus
+12 images for the two real pencil sketches.
 The report is [`report/report.pdf`](report/report.pdf).
 
 ![Showcase](report/figures/fig_showcase.jpg)
@@ -146,6 +157,21 @@ Findings:
 - The layout is fixed in the early denoising steps.
 - Cleaning the sketch is the single most important step.
 
+### Real pencil sketches on notebook paper
+
+![Hand-drawn sketches](report/figures/fig_handdrawn.jpg)
+
+| Setting | Mug: recall / F1 | Car: recall / F1 |
+|---|---|---|
+| Text only, no ControlNet | 0.12 / 0.12 | 0.33 / 0.06 |
+| Scribble, ruled lines kept | 0.35 / 0.19 | 0.27 / 0.08 |
+| Scribble, ruled lines removed | 0.95 / 0.69 | 0.82 / 0.26 |
+| Lineart, ruled lines removed | 0.89 / 0.86 | 0.91 / 0.83 |
+
+Ruled lines left in the control map are painted as stripes (mug) or window blinds (car), so the
+preprocessing removes them (`remove_ruled_lines`). The car's low F1 with scribble comes from the detailed
+street the model adds around the small car (many edges that are not in the sketch), not from a lost outline.
+
 Outputs:
 - per-experiment grids: `results/<exp>/grid.jpg`
 - per-image metrics: `results/<exp>/metrics.csv`
@@ -157,8 +183,9 @@ Outputs:
 - Seeds are fixed per run (`torch.Generator("cpu").manual_seed(seed)`); results are reproducible on the same GPU type and library versions (minor differences across GPU models are expected with fp16).
 - Library versions and the GPU are recorded in `results/env.json`.
 - Main settings (GPU config): SD 1.5, 512×512, UniPC scheduler, 30 steps, CFG 7.5, `cond_scale` 1.0, fp16 on CUDA.
-- Settings actually run (CPU config): SD 1.5 + LCM-LoRA, 4 steps, guidance 1.0, `cond_scale` 1.0, float32 on CPU. Reproduce with `python scripts/run_experiments.py --config configs/experiments_cpu.yaml --no-safety-checker`, then `scripts/analyze.py`, `scripts/make_figures.py`, `scripts/make_tradeoff.py`, `scripts/agent_demo.py --f1-target 0.85` and `scripts/build_report.py`.
-- Input sketches are regenerated deterministically by `scripts/make_sketches.py`.
+- Settings actually run (CPU config): SD 1.5 + LCM-LoRA, 4 steps, guidance 1.0, `cond_scale` 1.0, float32 on CPU. Reproduce with `python scripts/run_experiments.py --config configs/experiments_cpu.yaml --no-safety-checker`, then `scripts/analyze.py --config configs/experiments_cpu.yaml`, `scripts/make_figures.py`, `scripts/make_tradeoff.py`, `scripts/agent_demo.py --f1-target 0.85` and `scripts/build_report.py`.
+- Hand-drawn sketches: `python scripts/run_experiments.py --config configs/experiments_handdrawn.yaml --no-safety-checker`.
+- Input sketches 01–05 are regenerated deterministically by `scripts/make_sketches.py`; 06–07 are phone photos.
 
 ## References and acknowledgements
 

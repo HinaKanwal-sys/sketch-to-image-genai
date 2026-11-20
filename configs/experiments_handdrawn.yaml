@@ -1,0 +1,42 @@
+# Two real pencil sketches on ruled notebook paper, photographed with a phone.
+# Same CPU settings as experiments_cpu.yaml; the preprocessing additionally removes the ruled lines
+# and drops larger specks (phone photos at ~1 MP have bigger noise blobs than the generated sketches).
+
+defaults:
+  base: sd15
+  control: scribble
+  style: photoreal
+  preprocess: clean
+  lcm: true
+  steps: 4
+  guidance_scale: 1.0
+  cond_scale: 1.0
+  control_start: 0.0
+  control_end: 1.0
+  scheduler: unipc
+
+preprocess:
+  size: 512
+  c: 12
+  min_component_px: 150
+  remove_ruled_lines: true
+
+sketches:
+  06_mug_photo: "a white ceramic coffee mug with a handle, half full of coffee, on a wooden table"
+  07_car_photo: "a silver sedan car, side view, parked on a city street"
+
+experiments:
+  H1_handdrawn_control:
+    description: "Real sketches: text only vs. scribble vs. lineart ControlNet."
+    sweep: {control: [none, scribble, lineart]}
+    seeds: [1]
+
+  H2_handdrawn_style:
+    description: "Real sketches: different styles from the prompt."
+    sweep: {style: [photoreal, watercolor, concept_art]}
+    seeds: [1]
+
+  H3_ruled_lines:
+    description: "Ruled notebook lines kept in the control map vs. removed."
+    sweep: {preprocess: [keep_lines, clean]}
+    seeds: [1]

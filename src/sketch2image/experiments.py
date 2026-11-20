@@ -26,7 +26,7 @@ import csv
 import itertools
 import json
 import platform
-from dataclasses import fields
+from dataclasses import fields, replace
 from pathlib import Path
 
 import yaml
@@ -156,7 +156,8 @@ def run_experiments(
 
     def get_control(sk: str, mode: str, prep: str = "clean") -> Image.Image | None:
         """prep='clean' uses the full cleanup; prep='raw' feeds the unprocessed scan
-        (only resized and inverted), to measure what preprocessing contributes."""
+        (only resized and inverted), to measure what preprocessing contributes;
+        prep='keep_lines' cleans the photo but leaves ruled notebook lines in."""
         if mode == "none":
             return None
         key = (sk, mode, prep)
@@ -164,6 +165,9 @@ def run_experiments(
             if prep == "raw":
                 src = Image.open(next(sketch_dir.glob(f"{sk}.*"))).convert("RGB")
                 base_img = src.resize((clean_cfg.size, clean_cfg.size), Image.LANCZOS)
+            elif prep == "keep_lines":
+                src = next(sketch_dir.glob(f"{sk}.*"))
+                base_img = clean_sketch(src, replace(clean_cfg, remove_ruled_lines=False))
             else:
                 base_img = get_clean(sk)
             control_cache[key] = make_control(base_img, mode)

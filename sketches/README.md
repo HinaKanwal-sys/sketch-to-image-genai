@@ -7,18 +7,22 @@
 | `03_hover_car.png` | Hover car, side view | Vehicle/product: smooth curves, one closed silhouette, hover pads under the body |
 | `04_desk_lamp.png` | Articulated desk lamp | Product design: thin parts, joints, cone shape, light rays (non-object strokes) |
 | `05_floating_island.png` | Floating island with cabin, trees, waterfall | Scene: many small objects at different scales, sky elements (clouds, birds) |
+| `06_mug_photo.jpg` | Coffee mug, half full | Real pencil drawing on ruled notebook paper, phone photo with hand shadow, hatched shading |
+| `07_car_photo.jpg` | Sedan car, side view | Real pencil drawing on ruled notebook paper, small in the frame, strong shadow |
 
 ## Provenance
 
-The sketches are drawn by [`scripts/make_sketches.py`](../scripts/make_sketches.py), a small "pen model"
+**01–05** are drawn by [`scripts/make_sketches.py`](../scripts/make_sketches.py), a small "pen model"
 that draws strokes with hand-like wobble, overshoot, double lines and pressure variation on a textured,
-unevenly lit paper background (like a phone photo of a pencil sketch). No external images were used.
-They can be regenerated exactly with:
+unevenly lit paper background (like a phone photo of a pencil sketch). They can be regenerated exactly with:
 
 ```bash
 python scripts/make_sketches.py --out sketches
 ```
 
-Hand-drawn sketches (paper + phone photo) can be added to this folder at any time. The preprocessing
-stage (`src/sketch2image/preprocess.py`) cleans uneven lighting and paper texture automatically. Add a
-subject line for each new sketch under `sketches:` in `configs/experiments.yaml`.
+**06–07** are my own pencil drawings on a notebook page, photographed with a phone. The only change is
+that the mug photo was rotated by 90° so the mug stands upright. The ruled lines of the paper are removed
+by the preprocessing (`remove_ruled_lines` in `configs/experiments_handdrawn.yaml`).
+
+No external images were used. To add a new sketch, put the photo in this folder and add a subject line
+for it under `sketches:` in a config file.
