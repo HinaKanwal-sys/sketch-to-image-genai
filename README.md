@@ -94,18 +94,23 @@ python scripts/run_experiments.py --config configs/smoke.yaml --out results_smok
 
 All runs use fixed seeds; every image's full settings and metrics are logged in `results/<exp>/metrics.csv`.
 
+**Experiments that were run** (CPU study, `configs/experiments_cpu.yaml`, results in `results/`):
+
 | ID | Question | Sweep |
 |---|---|---|
 | E1 | Which control representation preserves the sketch best? | none (text only), scribble, lineart, soft edge, canny |
-| E1b | Learned vs. hand-crafted control maps | PiDiNet soft edge, learned lineart |
-| E2 | Sketch adherence vs. creative freedom | `cond_scale` 0.2 → 1.6 |
-| E3 | When does structure get decided? | ControlNet active over [0,1], [0,0.6], [0,0.3], [0.3,1] |
+| E2 | Sketch adherence vs. creative freedom | `cond_scale` 0.3 → 1.6 |
+| E3 | When does structure get decided? | ControlNet active over [0,1], [0,0.5], [0.5,1] |
 | E4 | Style transfer from the prompt | photoreal, concept art, watercolor, clay, cyberpunk |
-| E5 | Text guidance and step count | CFG {3, 7.5, 12} × steps {15, 30, 50} |
-| E6 | Few-step sampling | LCM-LoRA, 2 / 4 / 8 steps |
-| E7 | Seed variance | 6 seeds |
-| E8 | Does preprocessing matter? | raw scan vs. cleaned sketch × {scribble, lineart} |
-| E9 | Bigger base model | SDXL + xinsir scribble ControlNet |
+| E5 | Few-step sampling | LCM-LoRA, 2 / 4 / 8 steps |
+| E5b | Cost of LCM vs. standard sampling | UniPC 20 steps, CFG 7.5 (no LCM) |
+| E7 | Seed variance | 3 seeds |
+| E8 | Does preprocessing matter? | raw scan vs. cleaned sketch |
+
+**GPU configuration, not run** (no GPU was available; defined in `configs/experiments.yaml` and the
+Kaggle notebook for anyone who wants to extend the study): E1b learned annotators (PiDiNet soft edge,
+learned lineart), E5 CFG {3, 7.5, 12} × steps {15, 30, 50}, E9 SDXL + xinsir scribble ControlNet,
+and larger seed counts.
 
 ### Metrics
 
