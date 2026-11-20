@@ -4,30 +4,30 @@
 <meta charset="utf-8">
 <title>Bringing Sketches to Life with Generative AI</title>
 <style>
-  @page { size: A4; margin: 13mm 14mm 13mm 14mm; }
-  body { font-family: "Calibri", "Segoe UI", Arial, sans-serif; font-size: 9.1pt; line-height: 1.25; color: #111; margin: 0; }
-  h1 { font-size: 15.5pt; margin: 0 0 2px 0; }
-  .meta { font-size: 9.6pt; margin-bottom: 6px; color: #222; }
+  @page { size: A4; margin: 16mm 16mm 16mm 16mm; }
+  body { font-family: "Calibri", "Segoe UI", Arial, sans-serif; font-size: 10.5pt; line-height: 1.3; color: #111; margin: 0; }
+  h1 { font-size: 18pt; margin: 0 0 4px 0; }
+  .meta { font-size: 10.5pt; margin-bottom: 6px; color: #222; }
   .meta span { margin-right: 18px; }
-  h2 { font-size: 11pt; margin: 7px 0 3px 0; border-bottom: 1px solid #999; padding-bottom: 1px; }
+  h2 { font-size: 12.5pt; margin: 11px 0 4px 0; border-bottom: 1px solid #999; padding-bottom: 2px; }
   h2, h3 { break-after: avoid; }
-  h3 { font-size: 10pt; margin: 6px 0 2px 0; }
-  p { margin: 0 0 5px 0; text-align: justify; }
-  ul, ol { margin: 0 0 5px 0; padding-left: 17px; }
-  li { margin-bottom: 1px; }
-  figure { margin: 5px 0 7px 0; text-align: center; break-inside: avoid; }
+  h3 { font-size: 11.5pt; margin: 10px 0 4px 0; }
+  p { margin: 0 0 7px 0; text-align: justify; }
+  ul, ol { margin: 0 0 7px 0; padding-left: 20px; }
+  li { margin-bottom: 3px; }
+  figure { margin: 8px 0 10px 0; text-align: center; break-inside: avoid; }
   figure img { width: 100%; display: block; }
-  figcaption { font-size: 8.3pt; color: #333; margin-top: 2px; text-align: left; }
-  table { border-collapse: collapse; font-size: 8.4pt; margin: 3px 0 6px 0; width: 100%; break-inside: avoid; }
-  th, td { border: 1px solid #bbb; padding: 1.5px 4px; text-align: center; }
+  figcaption { font-size: 9.5pt; color: #333; margin-top: 3px; text-align: left; }
+  table { border-collapse: collapse; font-size: 9.5pt; margin: 4px 0 8px 0; width: 100%; break-inside: avoid; }
+  th, td { border: 1px solid #bbb; padding: 2px 5px; text-align: center; }
   th { background: #eee; }
   td:first-child, th:first-child { text-align: left; }
-  .two { display: flex; gap: 10px; align-items: flex-start; }
+  .two { display: flex; gap: 14px; align-items: flex-start; }
   .two > * { flex: 1; }
-  code { font-family: Consolas, monospace; font-size: 8.6pt; }
-  .small { font-size: 8.4pt; text-align: left; }
-  .refs { columns: 2; column-gap: 18px; }
-  .refs li { font-size: 8.1pt; margin-bottom: 0; break-inside: avoid; }
+  code { font-family: Consolas, monospace; font-size: 9.5pt; }
+  .small { font-size: 10pt; text-align: left; }
+  .refs { columns: 2; column-gap: 20px; }
+  .refs li { font-size: 9.5pt; margin-bottom: 1px; break-inside: avoid; }
   b.best { color: #0a5; }
 </style>
 </head>
@@ -116,8 +116,7 @@ centre lines and detect edges in the generated image (bilateral filter + Canny [
 <b>Chamfer distance</b> from sketch to image in pixels. For <i>prompt alignment</i> I use the <b>CLIP score</b> [11]
 (100·cosine similarity of image and prompt, ViT-B/32). I validated the edge metric before use: the sketch against
 itself gives 1.0, a 4-px shift still gives recall 0.999, a 15-px shift 0.53, an unrelated drawing 0.14, a blank image 0,
-and random noise 0.49 recall but only 0.14 precision. This is why I report F1 and not recall alone.
-I dropped an edge-SSIM metric because a blank image scored 0.75.</p>
+and random noise 0.49 recall but only 0.14 precision, which is why I report F1 and not recall alone.</p>
 
 <h2>3. Experimental setup and reproducibility</h2>
 <p><b>Hardware constraint.</b> I had no GPU, only a laptop CPU (Intel Core i5-7300U, 4 threads, 16 GB RAM). A standard
@@ -128,22 +127,18 @@ guidance 1.0, 512×512, seed 1, cleaned sketch, photoreal style. This takes abou
 uses the standard UniPC sampler [6] with 20 steps and guidance 7.5 as a quality reference.</p>
 <p><b>Inputs.</b> Five sketches (tower, robot, hover car, desk lamp, floating island) in <code>sketches/</code>. I made them with a
 small drawing script (<code>scripts/make_sketches.py</code>) that imitates pencil strokes (hand wobble, overshoot, double lines) on
-unevenly lit paper, like a phone photo, so they are reproducible and the preprocessing has real work to do. <b>Experiments:</b> E1 control type (incl. a text-only baseline
-without ControlNet), E2 conditioning scale, E3 control window, E4 style, E5 LCM step count, E5b standard sampler, E7 seeds,
-E8 raw vs. cleaned sketch; 135 images in total. One factor is changed at a time from the default. Two real pencil
-drawings were tested separately with the same settings (section 4, last part; 12 more images).</p>
-<p class="small"><b>Reproducibility.</b> Python 3.14, PyTorch 2.12 (CPU, float32), diffusers 0.43.0, transformers 5.23.0, peft 0.21.3.
-Models: <code>stable-diffusion-v1-5</code>, <code>lllyasviel/control_v11p_sd15_{scribble,lineart,softedge,canny}</code>,
-<code>latent-consistency/lcm-lora-sdv1-5</code>, <code>openai/clip-vit-base-patch32</code>. All settings are in
-<code>configs/experiments_cpu.yaml</code>; seeds are fixed (<code>torch.Generator</code>). Re-run with
-<code>python scripts/run_experiments.py --config configs/experiments_cpu.yaml</code>, then <code>scripts/analyze.py --config configs/experiments_cpu.yaml</code> and
-<code>scripts/make_figures.py</code>. Exact package versions are saved in <code>results/env.json</code>, and every image has a row in
-<code>results/&lt;experiment&gt;/metrics.csv</code>. A GPU configuration with SDXL [7] and more seeds is included
-(<code>configs/experiments.yaml</code>, Kaggle notebook) but was not run.</p>
+unevenly lit paper, like a phone photo, so they are reproducible and the preprocessing has real work to do. On these I ran
+eight experiments (E1–E8, 135 images), changing one factor at a time from the default. Two real pencil drawings were
+tested separately with the same settings (end of section 4, 12 more images).</p>
+<p><b>Reproducibility.</b> Python 3.14, PyTorch 2.12 (CPU, float32), diffusers 0.43.0. Models: SD 1.5,
+ControlNet v1.1 (scribble, lineart, soft edge, canny), LCM-LoRA for SD 1.5 and CLIP ViT-B/32 (full IDs and licences in
+<code>REFERENCES.md</code>). All settings are in <code>configs/</code>, seeds are fixed, and every image has a row in
+<code>results/&lt;experiment&gt;/metrics.csv</code>. The README lists the commands to re-run everything. A GPU configuration
+with SDXL [7] and more seeds is included but was not run.</p>
 
 <h2>4. Results</h2>
 <figure>
-<img src="figures/fig_showcase.jpg" alt="Showcase" style="width:72%;margin:auto">
+<img src="figures/fig_showcase.jpg" alt="Showcase" style="width:74%;margin:auto">
 <figcaption><b>Figure 2.</b> All five input sketches, the scribble control map and the results for five styles (default settings, seed 1).
 Every result keeps the outline, the pose and the proportions of the drawing, while the prompt changes material, colour and light.</figcaption>
 </figure>
@@ -169,15 +164,11 @@ Soft edge allows the most freedom but loses thin parts, such as the hover-car sp
 </div>
 </div>
 <figure>
-<img src="figures/fig_control_type.jpg" alt="Control type comparison" style="width:78%;margin:auto">
+<img src="figures/fig_control_type.jpg" alt="Control type comparison" style="width:82%;margin:auto">
 <figcaption><b>Figure 3.</b> Same sketch and prompt with no ControlNet and with four control representations.</figcaption>
 </figure>
 
 <h3>E2/E3: How strongly and when the sketch is applied</h3>
-<figure>
-<img src="figures/fig_cond_scale.jpg" alt="Conditioning scale" style="width:80%;margin:auto">
-<figcaption><b>Figure 4.</b> Conditioning scale from 0.3 to 1.6. At 0.3 the hover car becomes a flat disc; from 1.0 the result follows the drawing closely.</figcaption>
-</figure>
 <div class="two">
 <div>
 <table>
@@ -195,7 +186,7 @@ Soft edge allows the most freedom but loses thin parts, such as the hover-car sp
 <div>
 <p>The conditioning scale shows a clear <b>trade-off</b>. F1 rises steeply up to 1.0 and then saturates (0.85 → 0.91),
 while the CLIP score falls from 30.9 to 28.2: the stronger the sketch, the less freedom the model has to follow the text.
-I found 0.6–1.0 to be the useful range.</p>
+At 0.3 the hover car becomes a flat disc; from 1.0 on it follows the drawing closely. I found 0.6–1.0 to be the useful range.</p>
 <p>The control window shows <i>when</i> the sketch matters. Applying ControlNet only in the first half of the steps keeps most of
 the structure (F1 0.76), while applying it only in the second half has almost no effect (0.17). The layout of the image is
 decided in the early, high-noise steps. Releasing the control early is a cheap way to give the model more freedom for
@@ -208,7 +199,7 @@ texture and detail.</p>
 <div>
 <figure style="margin-top:0">
 <img src="figures/fig_tradeoff.png" alt="Trade-off">
-<figcaption><b>Figure 5.</b> Sketch preservation vs. prompt alignment for every configuration (means over 5 sketches).</figcaption>
+<figcaption><b>Figure 4.</b> Sketch preservation vs. prompt alignment for every configuration (means over 5 sketches).</figcaption>
 </figure>
 </div>
 <div>
@@ -230,26 +221,24 @@ all five styles (Fig. 2). The exception is <i>cyberpunk</i> on the hover car (F1
 streaks created many extra edges (precision 0.31). <b>Sampler (E5).</b> With LCM, 2 and 4 steps preserve the sketch equally well, and 4 steps
 give cleaner surfaces. 8 steps did not help. On the hover car F1 fell to 0.34, but recall stayed at 0.96: the shape was kept, and a detailed
 water texture added many extra edges (precision 0.21), so F1 must be read together with recall and the images. The standard 20-step
-sampler with guidance 7.5 gives the most realistic images and the highest CLIP score: real sky, clouds and glass reflections (Fig. 6).
+sampler with guidance 7.5 gives the most realistic images and the highest CLIP score: real sky, clouds and glass reflections (Fig. 5).
 The strong text guidance also pulls the image away from the drawing (F1 0.54), and each image is 9× slower on my CPU. <b>Seeds (E7).</b>
-Different seeds change colours and materials, but the shape stays the same; mean F1 varied by 0.08 over three seeds, so
-differences smaller than this between settings should not be over-interpreted. <b>Preprocessing (E8)</b> had the <b>largest single
+Different seeds change colours and materials but not the shape; mean F1 varied by 0.08, so smaller differences should not be over-interpreted. <b>Preprocessing (E8)</b> had the <b>largest single
 effect</b> of all experiments: using the raw photo of the sketch as control lowers F1 from 0.85 to 0.26. The grey paper texture
-and shadows become false "lines", so the model builds a different object (Fig. 6, bottom: a mountain appears and the cabin and waterfall are lost).</p>
+and shadows become false "lines", so the model builds a different object (Fig. 5, bottom: a mountain appears and the cabin and waterfall are lost).</p>
 <figure>
-<img src="figures/fig_ablations.jpg" alt="Ablations" style="width:54%;margin:auto">
-<figcaption><b>Figure 6.</b> Top: LCM steps vs. standard sampler. Bottom: raw vs. cleaned sketch as control input.</figcaption>
+<img src="figures/fig_ablations.jpg" alt="Ablations" style="width:56%;margin:auto">
+<figcaption><b>Figure 5.</b> Top: LCM steps vs. standard sampler. Bottom: raw vs. cleaned sketch as control input.</figcaption>
 </figure>
 
 <h3>Real hand-drawn sketches</h3>
 <figure>
-<img src="figures/fig_handdrawn.jpg" alt="Hand-drawn sketches" style="width:80%;margin:auto">
-<figcaption><b>Figure 7.</b> My own pencil drawings, photographed on ruled notebook paper. With the ruled lines left in the control map the model
+<img src="figures/fig_handdrawn.jpg" alt="Hand-drawn sketches" style="width:90%;margin:auto">
+<figcaption><b>Figure 6.</b> My own pencil drawings, photographed on ruled notebook paper. With the ruled lines left in the control map the model
 paints them as stripes; with my line removal the drawing is followed closely.</figcaption>
 </figure>
-<p>To test the pipeline on real input I drew a half-full coffee mug and a car in pencil on a ruled notebook page and photographed
-them with my phone (<code>configs/experiments_handdrawn.yaml</code>). The ruled lines were a new problem: the cleanup keeps them as dark
-lines and ControlNet treats them as part of the drawing. I added a step to <code>preprocess.py</code> that finds long straight segments
+<p>I drew a half-full coffee mug and a car in pencil on a ruled notebook page and photographed them with my phone
+(<code>configs/experiments_handdrawn.yaml</code>). The ruled lines were a new problem: ControlNet treats them as part of the drawing. I added a step to <code>preprocess.py</code> that finds long straight segments
 with a Hough transform, keeps those parallel to the dominant direction, erases them and reconnects the strokes they crossed.
 Leaving the lines in lowered edge recall from 0.95 to 0.35 (mug) and from 0.82 to 0.27 (car): the model turned them into stripes on
 the mug and window blinds behind the car. With the lines removed, every ControlNet result keeps the outline; lineart gave the best F1
@@ -261,17 +250,16 @@ empty page with a detailed street; these extra edges lower precision (0.15 with 
 <div class="two">
 <figure style="margin-top:0; flex:1.0">
 <img src="../results/agent/agent_attempts.jpg" alt="Agent attempts">
-<figcaption><b>Figure 8.</b> Agent runs with a free-text request (target edge F1 ≥ 0.85). Every attempt is shown; the agent keeps the best one.</figcaption>
+<figcaption><b>Figure 7.</b> Agent runs with a free-text request (target edge F1 ≥ 0.85). Every attempt is shown; the agent keeps the best one.</figcaption>
 </figure>
 <div>
 <p><b>Web interface</b> (<code>app/gradio_app.py</code>). A Gradio app where a user uploads or draws a sketch, types what it is,
 and chooses style, ControlNet type, scale, control window, steps and seed. It shows the control map, the result and the edge metrics.</p>
-<p><b>Self-correcting agent</b> (<code>agent.py</code>). The agent turns a free-text request into settings and checks its own
-output. It (1) detects the style from keywords (e.g. "watercolor", "product render"), (2) picks the ControlNet type from the
-line density of the sketch and starts at scale 0.9, (3) generates, (4) measures edge F1 and CLIP, and (5) if the structure is
-too weak it raises the scale by 0.3 or switches to lineart; if the image ignores the prompt it lowers the scale. It stops at the
-target or after 3 attempts and keeps the best image. Every decision is written to a log.</p>
-<p>In my demo (Fig. 8) the agent improved F1 on all three sketches: hover car 0.83 → 0.91, desk lamp 0.81 → 0.85 and floating
+<p><b>Self-correcting agent</b> (<code>agent.py</code>). The agent reads the style from keywords in a free-text request, picks
+the ControlNet type from the line density of the sketch, generates, and measures edge F1 and CLIP. If the structure is too weak
+it raises the scale by 0.3 or switches to lineart; if the image ignores the prompt it lowers the scale. It stops at the target or
+after 3 attempts, keeps the best image and logs every decision.</p>
+<p>In my demo (Fig. 7) the agent improved F1 on all three sketches: hover car 0.83 → 0.91, desk lamp 0.81 → 0.85 and floating
 island 0.63 → 0.92, the last one in a single correction. Each retry also uses a new seed, so part of the gain comes from seed
 variation. For the car and the lamp the CLIP score fell by 1–2 points as the scale went up, as E2 predicts.</p>
 </div>
